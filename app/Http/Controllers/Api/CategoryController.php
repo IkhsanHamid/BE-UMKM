@@ -13,7 +13,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'business_id' => 'required',
+            'business_id' => 'required|string',
         ]);
 
         $category = Category::create([

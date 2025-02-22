@@ -16,9 +16,9 @@ class StaffController extends Controller
             'name' => 'required|string',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string',
-            'outlet_id' => 'required|integer',
-            'role_id' => 'required|integer',
-            'business_id' => 'required|integer',
+            'outlet_id' => 'required|string',
+            'role_id' => 'required|string',
+            'business_id' => 'required|string',
         ]);
 
         $user = User::create([
@@ -52,7 +52,7 @@ class StaffController extends Controller
     public function editStaff(Request $request, $id)
     {
         $request->validate([
-            'role_id' => 'required|integer',
+            'role_id' => 'required|string',
             'name' => 'required|string',
             'email' => 'required|email',
         ]);

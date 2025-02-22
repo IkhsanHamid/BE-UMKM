@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stocks', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained('products');
-            $table->foreignId('outlet_id')->constrained('outlets');
+            $table->uuid('id')->primary();
+            $table->uuid('product_id');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+            $table->uuid('outlet_id');
+            $table->foreign('outlet_id')->references('id')->on('outlets')->onDelete('cascade');
             $table->integer('quantity');
             $table->timestamps();
         });

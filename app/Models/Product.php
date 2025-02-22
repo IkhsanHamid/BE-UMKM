@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    use HasUuids;
     //$table->id();
     // $table->string('name');
     // $table->foreignId('category_id')->constrained('categories');

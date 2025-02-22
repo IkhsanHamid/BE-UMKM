@@ -12,11 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
-            $table->foreignId('category_id')->constrained('categories');
-            //business_id is a foreign key that references the id column on the businesses table
-            $table->foreignId('business_id')->constrained('businesses');
+            $table->uuid('category_id');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
+            $table->uuid('business_id');
+            $table->foreign('business_id')->references('id')->on('businesses')->onDelete('cascade');
             $table->string('description');
             $table->string('image')->nullable();
             //color is a string that can be null

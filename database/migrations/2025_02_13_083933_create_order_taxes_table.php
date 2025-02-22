@@ -12,9 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('order_taxes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('order_id')->constrained('orders');
-            $table->foreignId('tax_id')->constrained('business_settings');
+            $table->uuid('id')->primary();
+
+            // Foreign key for orders
+            $table->uuid('order_id');
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+
+            // Foreign key for taxes (business settings)
+            $table->uuid('tax_id');
+            $table->foreign('tax_id')->references('id')->on('business_settings')->onDelete('cascade');
+
             $table->timestamps();
         });
     }

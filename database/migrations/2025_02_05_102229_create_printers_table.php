@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('printers', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             //name
             $table->string('name');
             //interface
@@ -26,7 +26,8 @@ return new class extends Migration
             //default printer
             $table->boolean('default')->default(false);
             //outlet id
-            $table->foreignId('outlet_id')->constrained()->onDelete('cascade');
+            $table->uuid('outlet_id');
+            $table->foreign('outlet_id')->references('id')->on('outlets')->onDelete('cascade');
             $table->timestamps();
         });
     }

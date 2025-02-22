@@ -15,7 +15,7 @@ class PrinterController extends Controller
             'name' => 'required|string',
             'connection_type' => 'required|string',
             'paper_width' => 'required|integer',
-            'outlet_id' => 'required|integer',
+            'outlet_id' => 'required|string',
             'default' => 'required|boolean',
         ]);
 

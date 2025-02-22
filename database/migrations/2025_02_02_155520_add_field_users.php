@@ -12,15 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            //
-            $table->foreignId('role_id')->constrained('roles');
-            //business_id is a foreign key that references the id column on the businesses table nullable
-            $table->foreignId('business_id')->constrained('businesses')->nullable();
-            //outlet_id is a foreign key that references the id column on the outlets table nullable
-            $table->foreignId('outlet_id')->constrained('outlets')->nullable();
-            //phone nullable
-            $table->string('phone')->nullable();
+            // Menambahkan role_id sebagai foreign key (menggunakan UUID)
+            $table->uuid('role_id')->nullable();
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
 
+            // business_id sebagai foreign key, nullable (UUID)
+            $table->uuid('business_id')->nullable();
+            $table->foreign('business_id')->references('id')->on('businesses')->onDelete('set null');
+
+            // outlet_id sebagai foreign key, nullable (UUID)
+            $table->uuid('outlet_id')->nullable();
+            $table->foreign('outlet_id')->references('id')->on('outlets')->onDelete('set null');
+
+            // phone nullable
+            $table->string('phone')->nullable();
         });
     }
 
@@ -30,7 +35,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            //
+            // Menghapus foreign key sebelum menghapus kolom
+            $table->dropForeign(['role_id']);
+            $table->dropForeign(['business_id']);
+            $table->dropForeign(['outlet_id']);
+
+            // Menghapus kolom yang telah ditambahkan
+            $table->dropColumn(['role_id', 'business_id', 'outlet_id', 'phone']);
         });
     }
 };

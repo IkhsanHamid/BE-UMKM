@@ -12,13 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sales_transactions', function (Blueprint $table) {
-            $table->id();
+           $table->uuid('id')->primary();
             //date
             $table->date('date');
-            $table->foreignId('business_id')->constrained('businesses');
-            $table->foreignId('outlet_id')->constrained('outlets');
-            //product
-            $table->foreignId('product_id')->constrained('products');
+            $table->uuid('business_id');
+            $table->foreign('business_id')->references('id')->on('businesses')->onDelete('cascade');
+            $table->uuid('outlet_id');
+            $table->foreign('outlet_id')->references('id')->on('outlets')->onDelete('cascade');
+            $table->uuid('product_id');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             //quantity sold
             $table->integer('quantity_sold');
             //total sales

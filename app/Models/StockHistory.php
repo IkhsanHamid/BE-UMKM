@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class StockHistory extends Model
 {
+    use HasUuids;
     //
     // $table->foreignId('stock_id')->constrained('stocks');
     //         $table->integer('quantity');

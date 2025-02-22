@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sales_summaries', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('business_id')->constrained('businesses');
+            $table->uuid('id')->primary();
+            $table->uuid('business_id');
+            $table->foreign('business_id')->references('id')->on('businesses')->onDelete('cascade');
             $table->date('date');
             $table->integer('total_sales');
             $table->integer('total_tax');

@@ -8,16 +8,20 @@ use App\Models\Outlet;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
     //register
-    public function register(Request $request)
-        {
-            $request->validate([
+   public function register(Request $request)
+    {
+        $request->validate([
             'name' => 'required|string',
             'email' => 'required|email',
             'password' => 'required|string',
+            'address' => 'required|string', // Tambahkan address agar tidak error saat membuat outlet
         ]);
 
         // Cek apakah email sudah terdaftar
@@ -27,43 +31,63 @@ class AuthController extends Controller
             ], 400);
         }
 
-        $user = User::create([
-            'name' => 'Owner',
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => 1,
-        ]);
+        // Gunakan transaksi database
+        DB::beginTransaction();
 
-        //create a business for the user
-        $business = Business::create([
-            'name' => $request->name,
-            'owner_id' => $user->id,
-        ]);
+        try {
+            // Buat user baru
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role_id' => '210c72db-f86b-4cfe-ac69-cb0dc723df40',
+            ]);
 
-        $user->business_id = $business->id;
+            // Buat bisnis untuk user
+            $business = Business::create([
+                'name' => $request->name,
+                'owner_id' => $user->id,
+            ]);
 
-        //create an outlet for the business
-        $outlet = Outlet::create([
-            'name' => $request->name . ' Pusat',
-            'business_id' => $business->id,
-            'address' => $request->address,
-        ]);
+            // Assign business_id ke user
+            $user->business_id = $business->id;
 
-        $user->outlet_id = $outlet->id;
-        $user->save();
+            // Buat outlet untuk bisnis
+            $outlet = Outlet::create([
+                'name' => $request->name . ' Pusat',
+                'business_id' => $business->id,
+                'address' => $request->address,
+            ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            // Assign outlet_id ke user
+            $user->outlet_id = $outlet->id;
+            $user->save();
 
-        return response()->json([
-            'access_token' => $token,
-            'data' => $user,
-        ], 201);
+            // Commit transaksi jika semua berhasil
+            DB::commit();
+
+            // Generate token setelah transaksi sukses
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'access_token' => $token,
+                'data' => $user,
+            ], 201);
+        } catch (\Exception $e) {
+            // Rollback jika ada error
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Gagal mendaftarkan user, coba lagi.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     //login
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
@@ -76,13 +100,27 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        if (Auth::attempt($credentials)) {
+            // Cek apakah user sudah login sebelumnya
+            $existingTokens = PersonalAccessToken::where('tokenable_id', $user->id)->get();
 
-        return response()->json([
-            'access_token' => $token,
-            'data' => $user,
-        ]);
+            if ($existingTokens->isNotEmpty()) {
+                // Hapus semua token lama sebelum membuat token baru
+                PersonalAccessToken::where('tokenable_id', $user->id)->delete();
+            }
+
+            // Buat token baru
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'access_token' => $token,
+                'data' => $user,
+            ]);
+        }
+
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
+
 
     //logout
     public function logout(Request $request)

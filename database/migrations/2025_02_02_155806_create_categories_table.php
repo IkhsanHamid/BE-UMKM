@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
-            //business_id is a foreign key that references the id column on the businesses table nullable
-            $table->foreignId('business_id')->constrained('businesses');
+            $table->uuid('business_id')->nullable();
+            $table->foreign('business_id')->references('id')->on('businesses')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('business_settings', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('business_id')->constrained('businesses');
+            $table->uuid('id')->primary();
+            $table->uuid('business_id');
+            $table->foreign('business_id')->references('id')->on('businesses')->onDelete('cascade');
             $table->string('name');
             //charge_type
             $table->string('charge_type');

@@ -12,9 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('order_discounts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('order_id')->constrained('orders');
-            $table->foreignId('discount_id')->constrained('business_settings');
+            $table->uuid('id')->primary();
+
+            // Foreign key for orders
+            $table->uuid('order_id');
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+
+            // Foreign key for discounts (business settings)
+            $table->uuid('discount_id');
+            $table->foreign('discount_id')->references('id')->on('business_settings')->onDelete('cascade');
+
             $table->timestamps();
         });
     }

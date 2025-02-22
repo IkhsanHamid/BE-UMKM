@@ -26,7 +26,7 @@ class OrderController extends Controller
         // 'cashier_id'
 
         $request->validate([
-            'outlet_id' => 'required|integer',
+            'outlet_id' => 'required|string',
             'sub_total' => 'required|numeric',
             'total_price' => 'required|numeric',
             'total_items' => 'required|integer',

@@ -15,7 +15,7 @@ class OutletController extends Controller
         $request->validate([
             'name' => 'required|string',
             'address' => 'required|string',
-            'business_id' => 'required|integer',
+            'business_id' => 'required|string',
         ]);
 
         $outlet = Outlet::create([

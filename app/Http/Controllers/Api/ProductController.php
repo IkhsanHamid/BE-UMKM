@@ -7,53 +7,56 @@ use App\Models\Outlet;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Stock;
+use App\Services\SupabaseStorage;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
     //add product
-    public function addProduct(Request $request)
-    {
+   public function addProduct(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string',
+        'category_id' => 'required|string',
+        'description' => 'required|string',
+        'price' => 'required|numeric',
+        'cost' => 'required|numeric',
+        'stock' => 'required|integer',
+        'business_id' => 'required|string',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+    ]);
 
-        $request->validate([
-            'name' => 'required|string',
-            'category_id' => 'required|integer',
-            'description' => 'required|string',
-            'price' => 'required|numeric',
-            'cost' => 'required|numeric',
-            'stock' => 'required|integer',
-            // 'barcode' => 'required|string',
-            'business_id' => 'required|integer',
-        ]);
-        //random time
+    // Mulai transaksi database
+    return DB::transaction(function () use ($request) {
         $sku = time();
-        echo $request;
+
+        // Buat produk
         $product = Product::create([
             'name' => $request->name,
             'category_id' => $request->category_id,
             'business_id' => $request->business_id,
             'description' => $request->description,
-
-            'color' => $request->color,
+            'color' => $request->color ?? null,
             'price' => $request->price,
             'cost' => $request->cost,
             'stock' => $request->stock,
-            'barcode' => $request->barcode,
+            'barcode' => $request->barcode ?? null,
             'sku' => $sku,
         ]);
 
-        //if image is sent
+        // Upload gambar jika ada
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            // Simpan file di storage dan dapatkan path
-            $path = $image->store('public/products');
+            $supabase = new SupabaseStorage();
+            $imageUrl = $supabase->uploadImage($request->file('image'), 'products');
 
-            // Simpan path relatif ke database
-            $product->image = Storage::url($path);
-            $product->save();
+            if ($imageUrl) {
+                $product->image = $imageUrl;
+                $product->save();
+            }
         }
 
-        //outlet by business
+        // Tambahkan stok ke setiap outlet yang terkait dengan business_id
         $outlets = Outlet::where('business_id', $request->business_id)->get();
 
         foreach ($outlets as $outlet) {
@@ -68,14 +71,15 @@ class ProductController extends Controller
             'message' => 'Product added successfully',
             'data' => $product,
         ], 201);
-    }
+    });
+}
 
     //update product
     public function updateProduct(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string',
-            'category_id' => 'required|integer',
+            'category_id' => 'required|string',
             'description' => 'required|string',
             'price' => 'required|numeric',
             'cost' => 'required|numeric',
@@ -105,7 +109,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'category_id' => 'required|integer',
+            'category_id' => 'required|string',
             'description' => 'required|string',
             'price' => 'required|numeric',
             'cost' => 'required|numeric',

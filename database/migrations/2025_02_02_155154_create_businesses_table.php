@@ -12,10 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('businesses', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name')->unique();
-            //owner_id is a foreign key that references the id column on the users table
-            $table->foreignId('owner_id')->constrained('users');
+            // owner_id menggunakan UUID agar sesuai dengan users.id
+            $table->uuid('owner_id');
+            $table->foreign('owner_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

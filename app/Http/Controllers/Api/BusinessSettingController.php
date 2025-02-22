@@ -16,7 +16,7 @@ class BusinessSettingController extends Controller
             'charge_type' => 'required|string',
             'type' => 'required|string',
             'value' => 'required|string',
-            'business_id' => 'required|integer',
+            'business_id' => 'required|string',
         ]);
 
         $businessSetting = BusinessSetting::create([

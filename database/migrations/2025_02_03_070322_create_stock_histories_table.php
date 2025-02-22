@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stock_histories', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('stock_id')->constrained('stocks');
+            $table->uuid('id')->primary();
+            $table->uuid('stock_id');
+            $table->foreign('stock_id')->references('id')->on('stocks')->onDelete('cascade');
             $table->integer('quantity');
             //current stock
             $table->integer('current_stock');

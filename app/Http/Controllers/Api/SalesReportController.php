@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Outlet;
 
 class SalesReportController extends Controller
@@ -19,12 +20,27 @@ class SalesReportController extends Controller
         $totalRecipts = $sales->count();
         $totalSales = $sales->sum('total_price');
         $averageSales = $sales->avg('total_price');
+        // Ambil semua order items terkait
+        $orderItems = OrderItem::whereIn('order_id', $sales->pluck('id'))->get();
+
+        // Hitung total cost dan total price dari order items
+        $totalCost = $orderItems->sum(function ($item) {
+            return $item->product->cost * $item->quantity;
+        });
+
+        $totalPrice = $orderItems->sum(function ($item) {
+            return $item->product->price * $item->quantity;
+        });
+        $totalProfit = $totalPrice - $totalCost;
         return response()->json([
             'date' => $date,
             'totalRecipts' => $totalRecipts,
             'totalSales' => $totalSales,
             'averageSales' => $averageSales,
-            'sales' => $sales
+            'sales' => $sales,
+            'totalCost' => $totalCost,
+            'totalPrice' => $totalPrice,
+            'totalProfit' => $totalProfit,
         ]);
     }
 }
